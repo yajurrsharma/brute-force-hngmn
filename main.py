@@ -1,9 +1,7 @@
 from english_words import get_english_words_set
 
 
-# brute = input("Enter the word: ")
 class Hangman:
-    # whats the idea
     def __init__(self, word, liv=6):
         self.word = word.lower()
         self.word_length = len(self.word)
@@ -22,19 +20,28 @@ class Hangman:
         filtered_words = {word for word in dict_words if len(word) == word_length}
 
         for dict_word in filtered_words:
+            match = True
             for i in self.given_indices:
-                if dict_word[i] == self.word[i]:
-                    self.remaining_words.add(dict_word)
+                if dict_word[i] != self.word[i]:
+                    match = False
+                    break
+            if match:
+                self.remaining_words.add(dict_word)
 
         for dict_word in self.remaining_words:
-            for letter in self.guessed_letters:
-                if dict_word.count(letter) == self.word.count(letter):
-                    self.final_words.add(dict_word)
-        # _ _ a _ n  -> Make the engine filter out words that match this pattern, and extract them.
+            match = True
+            for i in range(word_length):
+                if self.word[i] == "_":
+                    continue
+                if dict_word[i] != self.word[i]:
+                    match = False
+                    break
+            if match:
+                self.final_words.add(dict_word)
 
 
 if __name__ == "__main__":
-    game = Hangman("a__")
+    game = Hangman("a_pl_")
     game.start_game()
     print(game.guessed_letters)
     print(game.final_words)
