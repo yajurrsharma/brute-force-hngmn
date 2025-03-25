@@ -1,0 +1,7 @@
+{
+  "editor.wordWrapColumn": 100,
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.tabSize": 4,
+  "files.insertFinalNewline": true,
+  "editor.defaultFormatter": "ms-python.black-formatter"
+}
