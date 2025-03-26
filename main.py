@@ -3,7 +3,7 @@ import math
 
 
 class Hangman:
-    def __init__(self, word, lives=4):
+    def __init__(self, word, lives=6):
         self.word = word.lower()
         self.word_length = len(self.word)
         self.remaining_lives = lives
