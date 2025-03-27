@@ -3,8 +3,8 @@ import math
 
 
 class Hangman:
-    def __init__(self, true_word, word, lives=6):
-        self.true_word = true_word
+    def __init__(self, target_word, word, lives=6):
+        self.target_word = target_word.lower()
         self.word = word.lower()
         self.word_length = len(self.word)
         self.remaining_lives = lives
@@ -147,14 +147,14 @@ class Hangman:
         guess = self.optimal_letter
         self.guessed_letters.add(guess)
 
-        if guess in self.true_word:
-            for i in range(len(self.true_word)):
-                if self.true_word[i] == guess:
+        if guess in self.target_word:
+            for i in range(len(self.target_word)):
+                if self.target_word[i] == guess:
                     self.word = self.word[:i] + guess + self.word[i + 1 :]
         else:
             self.remaining_lives -= 1
 
-        if self.word == self.true_word:
+        if self.word == self.target_word:
             self.game_over = True
             return True
         elif self.remaining_lives == 0:
@@ -162,12 +162,12 @@ class Hangman:
             return False
 
     def end_game(self):
-        if self.word == self.true_word:
-            print(f"The engine has guessed the word: {self.true_word}")
+        if self.word == self.target_word:
+            print(f"The engine has guessed the word: {self.target_word}")
             print(f"Remaining lives: {self.remaining_lives}")
             print("The engine has won!")
         else:
-            print(f"The engine has failed to guess the word: {self.true_word}")
+            print(f"The engine has failed to guess the word: {self.target_word}")
             print(f"Remaining lives: {self.remaining_lives}")
             print("The engine has lost!")
         print(f"Guessed letters: {self.guessed_letters}")
@@ -175,5 +175,5 @@ class Hangman:
 
 
 if __name__ == "__main__":
-    game = Hangman(word="ws__s_i", true_word="wsuusoi")
+    game = Hangman(word="ws__s_i", target_word="wsuusoi")
     game.start_game()
