@@ -11,6 +11,8 @@ class Hangman:
         self.remaining_words = []
         self.given_indices = [i for i in range(self.word_length) if self.word[i] != "_"]
         self.guessed_letters = {self.word[index] for index in self.given_indices}
+        self.optimal_letter = None
+        self.final_guesses = set()
 
     @staticmethod
     def _safe_log2(x):
@@ -106,14 +108,12 @@ class Hangman:
             if letter in self.guessed_letters:
                 continue
 
-            # Create position-based patterns for each word
             pattern_counts = {}
             for word in self.remaining_words:
-                # Create pattern of positions where letter appears
+
                 pattern = tuple(i for i, char in enumerate(word) if char == letter)
                 pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
 
-            # Calculate entropy using position patterns
             entropy = 0
             for count in pattern_counts.values():
                 p = count / total_words
@@ -122,17 +122,46 @@ class Hangman:
 
             letter_entropy[letter] = entropy
 
-        optimal_letter = max(letter_entropy, key=letter_entropy.get)
+        self.optimal_letter = max(letter_entropy, key=letter_entropy.get)
         return (
-            optimal_letter
+            self.optimal_letter
             if not get_entropy
-            else (optimal_letter, letter_entropy[optimal_letter])
+            else (self.optimal_letter, letter_entropy[self.optimal_letter])
         )
+    
+    def guess_final_word(self):
+
+        """
+        Checks if the remaining words have the next optimal letter. If they do, they will be added to another set.
+        If the number of words in the set is greater than the remaining lives, the next optimal letter is calculated 
+        again, and the process is repeated until the number of words in the set is less than or equal to the remaining lives.
+        Once they are, the set is returned as the final guesses, and the game is over.
+        
+        """
+
+        self.final_guesses = set()
+
+        used_letters = set()
+
+        while len(self.final_guesses) == 0 or len(self.final_guesses) > self.remaining_lives:
+            if len(used_letters) >= self.word_length:
+                break
+
+            self.optimal_letter = self.get_optimal_letter_using_entropy()
+            while self.optimal_letter in used_letters:
+                self.optimal_letter = self.get_optimal_letter_using_entropy()
+
+            used_letters.add(self.optimal_letter)
+            self.guessed_letters.add(self.optimal_letter)
+
+            self.final_guesses = {word for word in self.remaining_words if self.optimal_letter in word}
+
+            self.remaining_lives -= 1
+
+        return self.final_guesses
 
 
 if __name__ == "__main__":
     game = Hangman("a__l_")
     game.start_game()
-    print(game.guessed_letters)
-    print(game.remaining_words)
-    print(game.get_optimal_letter_using_entropy(get_entropy=True))
+    print(game.guess_final_word())
