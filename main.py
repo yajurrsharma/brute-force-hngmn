@@ -197,7 +197,7 @@ class Hangman:
         else:
             self.remaining_lives -= 1
 
-        if self.word == self.target_word:
+        if self.word == self.target_word or "_" not in self.word:
             self.game_over = True
             return True
         elif self.remaining_lives == 0:
