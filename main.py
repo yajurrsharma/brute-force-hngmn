@@ -143,28 +143,27 @@ class Hangman:
 
             letter_entropy[letter] = entropy
 
-        self.optimal_letter = max(letter_entropy, key=letter_entropy.get)
+        optimal_letter = max(letter_entropy, key=letter_entropy.get)
         return (
-            self.optimal_letter
+            optimal_letter
             if not get_entropy
-            else (self.optimal_letter, letter_entropy[self.optimal_letter])
+            else (optimal_letter, letter_entropy[optimal_letter])
         )
-    
-    def guess_final_word(self):
 
+    def guess_final_word(self):
         """
         Checks if the remaining words have the next optimal letter. If they do, they will be added to another set.
-        If the number of words in the set is greater than the remaining lives, the next optimal letter is calculated 
+        If the number of words in the set is greater than the remaining lives, the next optimal letter is calculated
         again, and the process is repeated until the number of words in the set is less than or equal to the remaining lives.
         Once they are, the set is returned as the final guesses, and the game is over.
-        
         """
-
         self.final_guesses = set()
-
         used_letters = set()
 
-        while len(self.final_guesses) == 0 or len(self.final_guesses) > self.remaining_lives:
+        while (
+            len(self.final_guesses) == 0
+            or len(self.final_guesses) > self.remaining_lives
+        ):
             if len(used_letters) >= self.word_length:
                 break
 
@@ -175,8 +174,9 @@ class Hangman:
             used_letters.add(self.optimal_letter)
             self.guessed_letters.add(self.optimal_letter)
 
-            self.final_guesses = {word for word in self.remaining_words if self.optimal_letter in word}
-
+            self.final_guesses = {
+                word for word in self.remaining_words if self.optimal_letter in word
+            }
             self.remaining_lives -= 1
 
         return self.final_guesses
