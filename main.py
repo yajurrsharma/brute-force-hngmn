@@ -11,7 +11,7 @@ class Hangman:
         self.game_over = False
         self.remaining_words = []
         self.given_indices = [i for i in range(self.word_length) if self.word[i] != "_"]
-        self.guessed_letters = [self.word[index] for index in self.given_indices]
+        self.guessed_letters = {self.word[index] for index in self.given_indices}
         self.optimal_letter = None
 
     @staticmethod
@@ -139,8 +139,13 @@ class Hangman:
         )
 
     def handle_guess(self):
+        if self.optimal_letter is None:
+            self.game_over = True
+            print("No optimal letter found. Ending the game.")
+            return
+
         guess = self.optimal_letter
-        self.guessed_letters.append(guess)
+        self.guessed_letters.add(guess)
 
         if guess in self.true_word:
             for i in range(len(self.true_word)):
@@ -170,5 +175,5 @@ class Hangman:
 
 
 if __name__ == "__main__":
-    game = Hangman(word="a__l_", true_word="apple")
+    game = Hangman(word="ws__s_i", true_word="wsuusoi")
     game.start_game()
