@@ -3,15 +3,24 @@ import math
 
 
 class Hangman:
-    def __init__(self, target_word, word, lives=6):
-        self.target_word = target_word.lower()
+    def __init__(self, word, target_word=None, lives=6, game_mode="distribution"):
+        self.game_mode = game_mode
+        self.game_over = False
+        self.remaining_lives = lives
+
         self.word = word.lower()
         self.word_length = len(self.word)
-        self.remaining_lives = lives
-        self.game_over = False
-        self.remaining_words = []
+
+        if self.game_mode == "play":
+            self.target_word = target_word.lower()
+        elif self.game_mode != "distribution":
+            raise ValueError(
+                "Invalid game mode. Please select 'play' or 'distribution'."
+            )
+
         self.given_indices = [i for i in range(self.word_length) if self.word[i] != "_"]
         self.guessed_letters = {self.word[index] for index in self.given_indices}
+        self.remaining_words = []
         self.optimal_letter = None
 
     @staticmethod
@@ -29,9 +38,12 @@ class Hangman:
         return [item for item in lst if item is not None]
 
     def start_game(self):
-        while not self.game_over and self.remaining_lives > 0:
-            self.update_game_state()
-        self.end_game()
+        if self.game_mode == "play":
+            while not self.game_over and self.remaining_lives > 0:
+                self.update_game_state()
+            self.end_game()
+        elif self.game_mode == "distribution":
+            pass
 
     def update_game_state(self):
         self.filter_dictionary()
@@ -162,18 +174,21 @@ class Hangman:
             return False
 
     def end_game(self):
-        if self.word == self.target_word:
-            print(f"The engine has guessed the word: {self.target_word}")
-            print(f"Remaining lives: {self.remaining_lives}")
-            print("The engine has won!")
-        else:
-            print(f"The engine has failed to guess the word: {self.target_word}")
-            print(f"Remaining lives: {self.remaining_lives}")
-            print("The engine has lost!")
-        print(f"Guessed letters: {self.guessed_letters}")
-        print(f"Remaining words: {len(self.remaining_words)}")
+        if self.game_mode == "play":
+            if self.word == self.target_word:
+                print(f"The engine has guessed the word: {self.target_word}")
+                print(f"Remaining lives: {self.remaining_lives}")
+                print("The engine has won!")
+            else:
+                print(f"The engine has failed to guess the word: {self.target_word}")
+                print(f"Remaining lives: {self.remaining_lives}")
+                print("The engine has lost!")
+            print(f"Guessed letters: {self.guessed_letters}")
+            print(f"Remaining words: {len(self.remaining_words)}")
+        elif self.game_mode == "distribution":
+            pass
 
 
 if __name__ == "__main__":
-    game = Hangman(word="ws__s_i", target_word="wsuusoi")
+    game = Hangman(word="a__l_", target_word="apple", game_mode="play")
     game.start_game()
