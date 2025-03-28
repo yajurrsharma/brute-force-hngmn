@@ -3,16 +3,27 @@ import math
 
 
 class Hangman:
-    def __init__(self, word, lives=6):
+    def __init__(self, word, target_word=None, lives=6, game_mode="distribution"):
+        self.game_mode = game_mode
+        self.game_over = False
+        self.remaining_lives = lives
+
         self.word = word.lower()
         self.word_length = len(self.word)
-        self.remaining_lives = lives
-        self.game_over = False
-        self.remaining_words = []
+
+        if self.game_mode == "play":
+            self.target_word = target_word.lower()
+        elif self.game_mode == "distribution":
+            self.final_guesses = set()
+        else:
+            raise ValueError(
+                "Invalid game mode. Please select 'play' or 'distribution'."
+            )
+
         self.given_indices = [i for i in range(self.word_length) if self.word[i] != "_"]
         self.guessed_letters = {self.word[index] for index in self.given_indices}
+        self.remaining_words = []
         self.optimal_letter = None
-        self.final_guesses = set()
 
     @staticmethod
     def _safe_log2(x):
@@ -29,7 +40,17 @@ class Hangman:
         return [item for item in lst if item is not None]
 
     def start_game(self):
+        if self.game_mode == "play":
+            while not self.game_over and self.remaining_lives > 0:
+                self.update_game_state()
+            self.end_game()
+        elif self.game_mode == "distribution":
+            pass
+
+    def update_game_state(self):
         self.filter_dictionary()
+        self.optimal_letter = self.get_optimal_letter_using_entropy()
+        self.handle_guess()
 
     def filter_dictionary(self):
         """
@@ -122,28 +143,27 @@ class Hangman:
 
             letter_entropy[letter] = entropy
 
-        self.optimal_letter = max(letter_entropy, key=letter_entropy.get)
+        optimal_letter = max(letter_entropy, key=letter_entropy.get)
         return (
-            self.optimal_letter
+            optimal_letter
             if not get_entropy
-            else (self.optimal_letter, letter_entropy[self.optimal_letter])
+            else (optimal_letter, letter_entropy[optimal_letter])
         )
-    
-    def guess_final_word(self):
 
+    def guess_final_word(self):
         """
         Checks if the remaining words have the next optimal letter. If they do, they will be added to another set.
-        If the number of words in the set is greater than the remaining lives, the next optimal letter is calculated 
+        If the number of words in the set is greater than the remaining lives, the next optimal letter is calculated
         again, and the process is repeated until the number of words in the set is less than or equal to the remaining lives.
         Once they are, the set is returned as the final guesses, and the game is over.
-        
         """
-
         self.final_guesses = set()
-
         used_letters = set()
 
-        while len(self.final_guesses) == 0 or len(self.final_guesses) > self.remaining_lives:
+        while (
+            len(self.final_guesses) == 0
+            or len(self.final_guesses) > self.remaining_lives
+        ):
             if len(used_letters) >= self.word_length:
                 break
 
@@ -154,14 +174,52 @@ class Hangman:
             used_letters.add(self.optimal_letter)
             self.guessed_letters.add(self.optimal_letter)
 
-            self.final_guesses = {word for word in self.remaining_words if self.optimal_letter in word}
-
+            self.final_guesses = {
+                word for word in self.remaining_words if self.optimal_letter in word
+            }
             self.remaining_lives -= 1
 
         return self.final_guesses
 
+    def handle_guess(self):
+        if self.optimal_letter is None:
+            self.game_over = True
+            print("No optimal letter found. Ending the game.")
+            return
+
+        guess = self.optimal_letter
+        self.guessed_letters.add(guess)
+
+        if guess in self.target_word:
+            for i in range(len(self.target_word)):
+                if self.target_word[i] == guess:
+                    self.word = self.word[:i] + guess + self.word[i + 1 :]
+        else:
+            self.remaining_lives -= 1
+
+        if self.word == self.target_word or "_" not in self.word:
+            self.game_over = True
+            return True
+        elif self.remaining_lives == 0:
+            self.game_over = True
+            return False
+
+    def end_game(self):
+        if self.game_mode == "play":
+            if self.word == self.target_word:
+                print(f"The engine has guessed the word: {self.target_word}")
+                print(f"Remaining lives: {self.remaining_lives}")
+                print("The engine has won!")
+            else:
+                print(f"The engine has failed to guess the word: {self.target_word}")
+                print(f"Remaining lives: {self.remaining_lives}")
+                print("The engine has lost!")
+            print(f"Guessed letters: {self.guessed_letters}")
+            print(f"Remaining words: {len(self.remaining_words)}")
+        elif self.game_mode == "distribution":
+            pass
+
 
 if __name__ == "__main__":
-    game = Hangman("a__l_")
+    game = Hangman(word="a__l_", target_word="apple", game_mode="play")
     game.start_game()
-    print(game.guess_final_word())
