@@ -221,5 +221,5 @@ class Hangman:
 
 
 if __name__ == "__main__":
-    game = Hangman(word="a__l_", target_word="apple", game_mode="play")
+    game = Hangman(word="a__", target_word="ate", game_mode="play")
     game.start_game()
